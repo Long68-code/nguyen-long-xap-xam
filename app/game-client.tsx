@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type MouseEventHandler } from "react";
 import {
   Arrangement, Card, PLAYERS, RANK_LABEL, arrangeBest, dealVerified, evaluate,
   isFoul, scoreRound, sortCards,
@@ -25,7 +25,7 @@ function SuitIcon({ suit }: { suit: Card["suit"] }) {
 }
 
 function PlayingCard({ card, selected, hidden, onClick, compact = false }: {
-  card?: Card; selected?: boolean; hidden?: boolean; onClick?: () => void; compact?: boolean;
+  card?: Card; selected?: boolean; hidden?: boolean; onClick?: MouseEventHandler<HTMLButtonElement>; compact?: boolean;
 }) {
   if (hidden) return <div className={`card back ${compact ? "compact" : ""}`} aria-label="Lá bài úp"><span /></div>;
   if (!card) return <div className={`card slot ${compact ? "compact" : ""}`} aria-hidden="true" />;
@@ -85,7 +85,7 @@ export default function GameClient() {
     setZones({ rack: dealt[0], front: [], middle: [], back: [] });
   }, []);
   useEffect(() => {
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => undefined);
   }, []);
   useEffect(() => { localStorage.setItem("xap-xam-nguyen-long-v2", JSON.stringify(saved)); }, [saved]);
 

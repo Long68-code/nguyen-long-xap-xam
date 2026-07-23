@@ -1,5 +1,6 @@
 const CACHE = "xap-xam-nguyen-long-v1";
-const CORE = ["/", "/manifest.webmanifest", "/favicon.svg"];
+const BASE = new URL("./", self.location.href).pathname;
+const CORE = [BASE, `${BASE}manifest.webmanifest`, `${BASE}favicon.svg`];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
@@ -22,6 +23,6 @@ self.addEventListener("fetch", (event) => {
         caches.open(CACHE).then((cache) => cache.put(event.request, copy));
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/")))
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match(BASE)))
   );
 });
