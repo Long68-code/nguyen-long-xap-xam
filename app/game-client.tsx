@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type MouseEventHandler } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEventHandler } from "react";
 import {
   Arrangement, Card, PLAYERS, RANK_LABEL, arrangeBest, dealVerified, evaluate,
   isFoul, scoreRound, sortCards,
@@ -68,6 +68,78 @@ export default function GameClient() {
   const [roundScores, setRoundScores] = useState([0, 0, 0, 0]);
   const [thinking, setThinking] = useState(false);
   const [message, setMessage] = useState("Chạm lá để chọn, rồi chạm vào một chi");
+  const [audioReady, setAudioReady] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const musicTimerRef = useRef<number | null>(null);
+  const chordIndexRef = useRef(0);
+  const mutedRef = useRef(saved.muted);
+
+  const playNotes = (frequencies: number[], duration = 0.45, volume = 0.035, delay = 0) => {
+    const context = audioContextRef.current;
+    if (!context || mutedRef.current) return;
+    if (context.state === "suspended") void context.resume();
+    const start = context.currentTime + delay;
+    frequencies.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = index === 0 ? "sine" : "triangle";
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume / (index + 1), start + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.03);
+    });
+  };
+
+  const playLoungeBar = () => {
+    const chords = [
+      [130.81, 196.00, 246.94, 311.13],
+      [110.00, 164.81, 220.00, 261.63],
+      [98.00, 146.83, 196.00, 246.94],
+      [123.47, 185.00, 233.08, 293.66],
+    ];
+    const chord = chords[chordIndexRef.current % chords.length];
+    chordIndexRef.current += 1;
+    playNotes(chord, 1.9, 0.025);
+    playNotes([chord[1] * 2], 0.32, 0.018, 0.58);
+    playNotes([chord[2] * 2], 0.32, 0.016, 1.16);
+  };
+
+  const stopMusic = () => {
+    if (musicTimerRef.current !== null) window.clearInterval(musicTimerRef.current);
+    musicTimerRef.current = null;
+  };
+
+  const startMusic = () => {
+    if (musicTimerRef.current !== null) return;
+    playLoungeBar();
+    musicTimerRef.current = window.setInterval(playLoungeBar, 2100);
+  };
+
+  const toggleSound = async () => {
+    if (!audioContextRef.current) {
+      const AudioContextClass = window.AudioContext ||
+        (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioContextRef.current = new AudioContextClass();
+    }
+    await audioContextRef.current.resume();
+    if (!audioReady) {
+      setAudioReady(true);
+      mutedRef.current = false;
+      setSaved((state) => ({ ...state, muted: false }));
+      window.setTimeout(() => {
+        playNotes([523.25, 659.25, 783.99], 0.5, 0.045);
+        startMusic();
+      }, 0);
+      return;
+    }
+    setSaved((state) => {
+      mutedRef.current = !state.muted;
+      return { ...state, muted: !state.muted };
+    });
+  };
 
   useEffect(() => {
     try {
@@ -87,12 +159,27 @@ export default function GameClient() {
   useEffect(() => {
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => undefined);
   }, []);
-  useEffect(() => { localStorage.setItem("xap-xam-nguyen-long-v2", JSON.stringify(saved)); }, [saved]);
+  useEffect(() => {
+    mutedRef.current = saved.muted;
+    localStorage.setItem("xap-xam-nguyen-long-v2", JSON.stringify(saved));
+  }, [saved]);
+  useEffect(() => {
+    if (!audioReady) return;
+    if (saved.muted) stopMusic();
+    else startMusic();
+  }, [audioReady, saved.muted]);
+  useEffect(() => () => {
+    stopMusic();
+    if (audioContextRef.current) void audioContextRef.current.close();
+  }, []);
 
   const selectedCards = useMemo(() => Object.values(zones).flat().filter((card) => selected.has(card.id)), [zones, selected]);
-  const toggle = (card: Card) => setSelected((old) => {
-    const next = new Set(old); next.has(card.id) ? next.delete(card.id) : next.add(card.id); return next;
-  });
+  const toggle = (card: Card) => {
+    playNotes([card.rank >= 11 ? 440 : 330], 0.09, 0.025);
+    setSelected((old) => {
+      const next = new Set(old); next.has(card.id) ? next.delete(card.id) : next.add(card.id); return next;
+    });
+  };
   const move = (target: Zone) => {
     if (!selectedCards.length) return;
     const available = target === "rack" ? 13 : cap[target] - zones[target].length;
@@ -104,6 +191,7 @@ export default function GameClient() {
       return next;
     });
     setSelected(new Set());
+    playNotes([392, 523.25], 0.13, 0.022);
   };
 
   const autoArrange = async () => {
@@ -112,6 +200,7 @@ export default function GameClient() {
     const best = arrangeBest(hands[0]);
     setZones({ rack: [], front: best.front, middle: best.middle, back: best.back });
     setThinking(false); setMessage("Đã chọn cách cân bằng sức mạnh và rủi ro sập hầm");
+    playNotes([392, 493.88, 587.33], 0.42, 0.035);
   };
 
   const finish = async () => {
@@ -127,10 +216,18 @@ export default function GameClient() {
     let shown = 1;
     const timer = window.setInterval(() => {
       shown += 1; setReveal(Math.min(shown, 4));
+      playNotes([220 + shown * 55], 0.16, 0.03);
       if (shown >= 4) {
         clearInterval(timer);
         const result = scoreRound(all, saved.dealer, hands);
         setRoundScores(result.scores); setLines(result.lines);
+        if (result.scores[0] > 0) {
+          playNotes([523.25, 659.25, 783.99], 0.65, 0.045);
+        } else if (result.scores[0] < 0) {
+          playNotes([329.63, 261.63, 196.00], 0.65, 0.04);
+        } else {
+          playNotes([392, 392], 0.35, 0.03);
+        }
         setSaved((old) => ({
           money: old.money.map((money, i) => money + result.scores[i]),
           total: old.total.map((score, i) => score + result.scores[i]),
@@ -158,7 +255,9 @@ export default function GameClient() {
       <header className="topbar">
         <div><p className="eyebrow">NGUYEN LONG CASINO</p><h1>Binh Xập Xám</h1></div>
         <div className="header-actions">
-          <button className="icon-btn" onClick={() => setSaved((s) => ({ ...s, muted: !s.muted }))} aria-label="Bật tắt âm thanh">{saved.muted ? "🔇" : "🔊"}</button>
+          <button className="icon-btn" onClick={() => void toggleSound()} aria-label={audioReady && !saved.muted ? "Tắt âm thanh" : "Bật âm thanh"}>
+            {audioReady && !saved.muted ? "🔊" : "🔇"}
+          </button>
           <button className="icon-btn" onClick={() => setScreen("settings")} aria-label="Cài đặt">⚙</button>
         </div>
       </header>
@@ -222,7 +321,7 @@ export default function GameClient() {
 
       {screen === "settings" && <section className="modal-card page-card">
         <p className="eyebrow">PHÒNG ĐIỀU KHIỂN</p><h2>Cài đặt bàn chơi</h2>
-        <label className="setting-row"><span>Âm thanh tổng<small>Câm tất cả tức thì</small></span><input type="checkbox" checked={!saved.muted} onChange={() => setSaved((s) => ({ ...s, muted: !s.muted }))} /></label>
+        <label className="setting-row"><span>Âm thanh tổng<small>{audioReady ? "Nhạc lounge và hiệu ứng lá bài" : "Chạm để mở âm thanh trên iPhone"}</small></span><input type="checkbox" checked={audioReady && !saved.muted} onChange={() => void toggleSound()} /></label>
         <div className="rule-summary">
           <h3>Luật nhà Nguyen Long</h3>
           <p>Luật đang được máy áp dụng khi xếp bài và tính chi.</p>
@@ -231,7 +330,7 @@ export default function GameClient() {
             <ul>
               <li>Chi đầu 3 lá yếu nhất · chi giữa 5 lá · chi cuối 5 lá mạnh nhất.</li>
               <li>Mậu thầu &lt; Đôi &lt; Thú &lt; Sám cô &lt; Sảnh &lt; Thùng &lt; Cù lũ &lt; Tứ quý &lt; Thùng phá sảnh.</li>
-              <li>A lớn nhất, 2 bét bảng; A-2-3-4-5 là sảnh nhỏ nhất.</li>
+              <li>A lớn nhất, 2 bét bảng; A-2-3-4-5 là sảnh bét.</li>
               <li>Binh lủng nếu chi đầu mạnh hơn chi giữa hoặc chi giữa mạnh hơn chi cuối.</li>
               <li>Hoà chi: nhà cái thắng.</li>
             </ul>
@@ -280,7 +379,7 @@ export default function GameClient() {
         <button className={screen === "tournament" ? "active" : ""} onClick={() => setScreen("tournament")}><span>♛</span>Giải đấu</button>
         <button className={screen === "settings" ? "active" : ""} onClick={() => setScreen("settings")}><span>⚙</span>Cài đặt</button>
       </nav>
-      <footer>copyright - Nguyen Long LN162618@GMAIL 2026</footer>
+      <footer>Copyright - Nguyen Long LN162618@GMAIL.COM - 2026</footer>
     </main>
   );
 }
