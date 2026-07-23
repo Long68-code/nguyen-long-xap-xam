@@ -157,7 +157,19 @@ export default function GameClient() {
     setZones({ rack: dealt[0], front: [], middle: [], back: [] });
   }, []);
   useEffect(() => {
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => undefined);
+    if (!("serviceWorker" in navigator)) return;
+    let refreshing = false;
+    const onControllerChange = () => {
+      if (refreshing || sessionStorage.getItem("xap-xam-sw-v6")) return;
+      refreshing = true;
+      sessionStorage.setItem("xap-xam-sw-v6", "1");
+      window.location.reload();
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })
+      .then((registration) => registration.update())
+      .catch(() => undefined);
+    return () => navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
   }, []);
   useEffect(() => {
     mutedRef.current = saved.muted;
@@ -370,6 +382,7 @@ export default function GameClient() {
             <summary>Mậu binh đặc biệt</summary>
             <p className="rule-note">Ba thùng, ba sảnh, sáu đôi rưỡi, sảnh rồng và rồng đồng chất chưa tính tự động trong phiên bản này. Máy vẫn xếp và so từng chi bình thường; khi bổ sung sẽ có bảng thưởng riêng để không lẫn luật.</p>
           </details>
+          <p className="rule-note">Phiên bản 6 · cập nhật 24/07/2026</p>
         </div>
         <button className="secondary-action full" onClick={() => setScreen("arrange")}>Về bàn xếp bài</button>
       </section>}
