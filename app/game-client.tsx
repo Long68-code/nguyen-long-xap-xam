@@ -232,7 +232,7 @@ export default function GameClient() {
         <button className={screen === "tournament" ? "active" : ""} onClick={() => setScreen("tournament")}><span>♛</span>Giải đấu</button>
         <button className={screen === "settings" ? "active" : ""} onClick={() => setScreen("settings")}><span>⚙</span>Cài đặt</button>
       </nav>
-      <footer>Copyright © Nguyen Long 2026</footer>
+      <footer>copyright - Nguyen Long LN162618@GMAIL 2026</footer>
     </main>
   );
 }
