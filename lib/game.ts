@@ -155,7 +155,8 @@ export const arrangeBest = (cards: Card[]): Arrangement => {
   return best;
 };
 
-const handPoints = (winner: Card[], position: number) => 1 + royalty(winner, position);
+// Các mức 3/2/4/8/5/10 là TỔNG chi của hàng thắng, không phải chi cộng thêm.
+const handPoints = (winner: Card[], position: number) => royalty(winner, position) || 1;
 
 export type ScoreResult = { scores: number[]; lines: string[]; sweepBy: number | null };
 
@@ -163,50 +164,64 @@ export const scoreRound = (arrangements: Arrangement[], dealer: number, hands: C
   const scores = [0, 0, 0, 0];
   const lines: string[] = [];
   const swept = [0, 0, 0, 0];
+  const pairRecords: { i: number; j: number; base: number }[] = [];
   for (let i = 0; i < 4; i++) {
     for (let j = i + 1; j < 4; j++) {
       const wins = [0, 0];
-      let pair = 0;
+      let base = 0;
+      let bonus = 0;
       const ai = arrangements[i], aj = arrangements[j];
       const rows: [Card[], Card[]][] = [[ai.front, aj.front], [ai.middle, aj.middle], [ai.back, aj.back]];
       rows.forEach(([left, right], position) => {
         let cmp = compareHands(left, right);
         if (cmp === 0) cmp = dealer === i ? 1 : dealer === j ? -1 : 0;
-        if (cmp > 0) { pair += handPoints(left, position); wins[0]++; }
-        if (cmp < 0) { pair -= handPoints(right, position); wins[1]++; }
+        if (cmp > 0) {
+          base += 1;
+          bonus += handPoints(left, position) - 1;
+          wins[0]++;
+        }
+        if (cmp < 0) {
+          base -= 1;
+          bonus -= handPoints(right, position) - 1;
+          wins[1]++;
+        }
       });
       if (wins[0] === 3 || wins[1] === 3) {
-        pair *= 2;
+        base *= 2;
         const winner = wins[0] === 3 ? i : j;
         swept[winner]++;
         lines.push(`💥 ${PLAYERS[winner]} sập hầm ${PLAYERS[winner === i ? j : i]}`);
       } else {
+        const pair = base + bonus;
         const winner = pair > 0 ? i : j;
         lines.push(`${PLAYERS[winner]} ${pair === 0 ? "hoà" : `ăn ${Math.abs(pair)} chi của ${PLAYERS[winner === i ? j : i]}`}`);
       }
+      const pair = base + bonus;
+      pairRecords.push({ i, j, base });
       scores[i] += pair; scores[j] -= pair;
     }
   }
 
   const sweepBy = swept.findIndex((count) => count === 3);
   if (sweepBy >= 0) {
-    for (let j = 0; j < 4; j++) {
-      if (j === sweepBy) continue;
-      const transfer = Math.abs(scores[j]);
-      scores[sweepBy] += transfer;
-      scores[j] -= transfer;
+    for (const record of pairRecords) {
+      if (record.i !== sweepBy && record.j !== sweepBy) continue;
+      // Sập cả bàn: nhân đôi thêm phần so ba chi; thưởng hàng không bị nhân.
+      scores[record.i] += record.base;
+      scores[record.j] -= record.base;
     }
     lines.unshift(`💥💥💥 ${PLAYERS[sweepBy]} SẬP HẦM CẢ BÀN — điểm so chi nhân đôi`);
   }
 
   const aceCounts = hands.map((hand) => hand.filter((card) => card.rank === 14).length);
-  aceCounts.forEach((count, i) => scores[i] += count * 4 - 4);
-  lines.push(`🅰️ Chi Át: ${aceCounts.map((count, i) => `${PLAYERS[i]} ${count}A`).join(" · ")}`);
-
   const fourAces = aceCounts.findIndex((count) => count === 4);
-  if (fourAces >= 0) {
-    for (let j = 0; j < 4; j++) if (j !== fourAces) { scores[fourAces] += 4; scores[j] -= 4; }
-    lines.push(`🅰️🅰️🅰️🅰️ ${PLAYERS[fourAces]} tứ quý A: +12 chi`);
+  const arrangedFourAces = fourAces >= 0 && [arrangements[fourAces].middle, arrangements[fourAces].back]
+    .some((row) => row.filter((card) => card.rank === 14).length === 4);
+  if (arrangedFourAces) {
+    lines.push(`🅰️🅰️🅰️🅰️ ${PLAYERS[fourAces]} xếp tứ quý A — tính thưởng tứ quý theo vị trí, không cộng chi Át`);
+  } else {
+    aceCounts.forEach((count, i) => scores[i] += count * 4 - 4);
+    lines.push(`🅰️ Chi Át: ${aceCounts.map((count, i) => `${PLAYERS[i]} ${count}A`).join(" · ")}`);
   }
   return { scores, lines, sweepBy: sweepBy >= 0 ? sweepBy : null };
 };

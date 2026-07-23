@@ -223,7 +223,55 @@ export default function GameClient() {
       {screen === "settings" && <section className="modal-card page-card">
         <p className="eyebrow">PHÒNG ĐIỀU KHIỂN</p><h2>Cài đặt bàn chơi</h2>
         <label className="setting-row"><span>Âm thanh tổng<small>Câm tất cả tức thì</small></span><input type="checkbox" checked={!saved.muted} onChange={() => setSaved((s) => ({ ...s, muted: !s.muted }))} /></label>
-        <div className="rule-summary"><h3>Luật nhà Nguyen Long</h3><p>2 bét bảng · A lớn nhất · sảnh bánh A-2-3-4-5 · hoà chi nhà cái thắng · sập hầm ×2 · sập cả bàn ×2 · chi Át · tứ quý A +4 chi mỗi nhà.</p></div>
+        <div className="rule-summary">
+          <h3>Luật nhà Nguyen Long</h3>
+          <p>Luật đang được máy áp dụng khi xếp bài và tính chi.</p>
+          <details open>
+            <summary>Binh bài và thứ tự mạnh yếu</summary>
+            <ul>
+              <li>Chi đầu 3 lá yếu nhất · chi giữa 5 lá · chi cuối 5 lá mạnh nhất.</li>
+              <li>Mậu thầu &lt; Đôi &lt; Thú &lt; Sám cô &lt; Sảnh &lt; Thùng &lt; Cù lũ &lt; Tứ quý &lt; Thùng phá sảnh.</li>
+              <li>A lớn nhất, 2 bét bảng; A-2-3-4-5 là sảnh nhỏ nhất.</li>
+              <li>Binh lủng nếu chi đầu mạnh hơn chi giữa hoặc chi giữa mạnh hơn chi cuối.</li>
+              <li>Hoà chi: nhà cái thắng.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Thưởng từng chi</summary>
+            <div className="rule-grid">
+              <span>Chi thường thắng</span><b>1 chi</b>
+              <span>Sám cô chi đầu</span><b>3 chi</b>
+              <span>Cù lũ chi giữa</span><b>2 chi</b>
+              <span>Tứ quý chi cuối</span><b>4 chi</b>
+              <span>Tứ quý chi giữa</span><b>8 chi</b>
+              <span>Thùng phá sảnh chi cuối</span><b>5 chi</b>
+              <span>Thùng phá sảnh chi giữa</span><b>10 chi</b>
+            </div>
+            <small>Mức trên là tổng chi của hàng thắng, không cộng thêm 1 chi.</small>
+          </details>
+          <details>
+            <summary>Sập hầm và sập cả bàn</summary>
+            <ul>
+              <li>Thắng cả 3 chi một nhà: sập hầm, phần so chi từ 3 thành 6.</li>
+              <li>Sập cả 3 nhà: sập cả bàn, phần so chi thành 12 mỗi nhà.</li>
+              <li>Thưởng hàng mạnh và chi Át tính riêng, không bị nhân theo sập.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Chi Át và tứ quý Át</summary>
+            <ul>
+              <li>Chi Át bàn 4 người: 0A −4 · 1A 0 · 2A +4 · 3A +8 · 4A +12.</li>
+              <li>Nếu tách bốn A, người giữ bốn A nhận tổng +12 chi Át.</li>
+              <li>Nếu xếp thành tứ quý A: bỏ chi Át của cả bàn, chỉ tính tứ quý theo vị trí.</li>
+              <li>Tứ quý A chi cuối thắng 4 chi/nhà; chi giữa thắng 8 chi/nhà.</li>
+              <li>Tứ quý A vẫn thua thùng phá sảnh và không được cộng thưởng hai lần.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Mậu binh đặc biệt</summary>
+            <p className="rule-note">Ba thùng, ba sảnh, sáu đôi rưỡi, sảnh rồng và rồng đồng chất chưa tính tự động trong phiên bản này. Máy vẫn xếp và so từng chi bình thường; khi bổ sung sẽ có bảng thưởng riêng để không lẫn luật.</p>
+          </details>
+        </div>
         <button className="secondary-action full" onClick={() => setScreen("arrange")}>Về bàn xếp bài</button>
       </section>}
 

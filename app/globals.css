@@ -159,7 +159,16 @@ button:disabled { opacity: .45; }
 .setting-row span { font-weight: 700; }.setting-row small { display: block; margin-top: 4px; color: var(--muted); font-weight: 400; }
 .setting-row input { width: 22px; height: 22px; accent-color: var(--gold); }
 .rule-summary { padding: 16px; border-left: 2px solid var(--gold); background: rgba(216,173,85,.07); margin: 18px 0 24px; }
-.rule-summary h3 { margin: 0 0 8px; font-family: Georgia, serif; color: var(--gold-light); }.rule-summary p { margin: 0; color: #bdc8c1; font-size: 12px; line-height: 1.7; }
+.rule-summary h3 { margin: 0 0 8px; font-family: Georgia, serif; color: var(--gold-light); }
+.rule-summary > p { margin: 0 0 12px; color: #bdc8c1; font-size: 12px; line-height: 1.7; }
+.rule-summary details { border-top: 1px solid rgba(216,173,85,.18); padding: 11px 0; color: #bdc8c1; }
+.rule-summary summary { color: #f2ddb0; font-size: 12px; font-weight: 800; cursor: pointer; list-style-position: outside; }
+.rule-summary ul { margin: 9px 0 0; padding-left: 17px; font-size: 11px; line-height: 1.65; }
+.rule-summary li + li { margin-top: 4px; }
+.rule-grid { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; margin: 10px 0 8px; font-size: 11px; line-height: 1.45; }
+.rule-grid b { color: var(--gold-light); white-space: nowrap; }
+.rule-summary details small, .rule-note { display: block; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.rule-summary .rule-note { margin: 9px 0 0; }
 
 .bottom-nav {
   position: fixed; z-index: 20; left: 50%; transform: translateX(-50%); bottom: max(10px, env(safe-area-inset-bottom));
