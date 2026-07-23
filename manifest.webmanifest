@@ -1,0 +1,18 @@
+{
+  "name": "Binh Xập Xám — Nguyen Long Casino",
+  "short_name": "Xập Xám",
+  "description": "Binh Xập Xám casino cao cấp, chơi cùng ba đối thủ máy.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050908",
+  "theme_color": "#075a45",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
