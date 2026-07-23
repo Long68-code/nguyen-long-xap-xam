@@ -208,7 +208,8 @@ export default function GameClient() {
             </article>;
           })}
           {lines.length > 0 && <div className="result-panel"><h2>{roundScores[0] > 0 ? `Anh thắng +${roundScores[0]} chi` : roundScores[0] < 0 ? `Anh thua ${Math.abs(roundScores[0])} chi` : "Anh hoà ván"}</h2>
-            <div>{lines.map((line, i) => <p key={i}>{line}</p>)}</div><button className="primary-action" onClick={newRound}>Chia ván mới</button></div>}
+            <p className="result-lines">{lines.join("  ·  ")}</p>
+            <button className="primary-action" onClick={newRound}>Chia ván mới</button></div>}
         </section>
       )}
 

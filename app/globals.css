@@ -103,10 +103,11 @@ h2 { font-size: 28px; }
   box-shadow: inset 0 0 0 3px #102741, inset 0 0 0 4px rgba(226,203,132,.6), 0 3px 7px rgba(0,0,0,.3);
 }
 .card.back span { position: absolute; inset: 8px; border: 1px solid rgba(255,255,255,.22); border-radius: 4px; }
-.card.compact { width: 23px; border-radius: 4px; display: inline-block; margin-left: -5px; pointer-events: none; }
+.card.compact { width: 31px; border-radius: 5px; display: inline-block; margin-left: -7px; pointer-events: none; }
 .card.compact:first-child { margin-left: 0; }
-.card.compact .corner b { font-size: 8px; }
-.card.compact .corner .suit { width: 5px; height: 5px; }
+.card.compact .corner { top: 3px; left: 3px; }
+.card.compact .corner b { font-size: 10px; }
+.card.compact .corner .suit { width: 7px; height: 7px; }
 .card.compact .center-suit { display: none; }
 
 .rack-wrap { margin-top: 14px; position: relative; z-index: 2; }
@@ -130,18 +131,22 @@ button:disabled { opacity: .45; }
 
 .casino-table { min-height: 635px; padding: 12px; }
 .table-glow { position: absolute; inset: 24% 16%; border-radius: 50%; box-shadow: 0 0 90px rgba(228,193,107,.16); }
-.seat { position: relative; z-index: 2; border-radius: 15px; padding: 9px; margin-bottom: 8px; background: rgba(3,20,15,.6); border: 1px solid rgba(255,255,255,.08); }
+.seat { position: relative; z-index: 2; border-radius: 15px; padding: 11px 9px 10px; margin-bottom: 9px; background: rgba(3,20,15,.6); border: 1px solid rgba(255,255,255,.08); }
 .seat.is-dealer { border-color: rgba(216,173,85,.65); }
-.seat-title { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 6px; }
+.seat-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 8px; }
 .seat-title span { font-weight: 800; }
 .seat-title em { margin-left: 6px; padding: 2px 5px; border-radius: 4px; background: var(--gold); color: #151009; font-size: 7px; font-style: normal; }
 .positive { color: var(--green); } .negative { color: #ff7181; }
-.mini-hand { display: flex; justify-content: center; padding-left: 5px; }
-.seat p { margin: 5px 0 0; color: #b7c3bc; text-align: center; font-size: 9px; }
-.result-panel { position: relative; z-index: 3; margin-top: 12px; padding: 16px; border-radius: 18px; background: rgba(3,12,9,.94); border: 1px solid rgba(216,173,85,.45); }
-.result-panel h2 { color: var(--gold-light); text-align: center; font-size: 22px; }
-.result-panel div { max-height: 150px; overflow: auto; margin: 12px 0; }
-.result-panel p { margin: 4px 0; font-size: 11px; color: #c4cec8; }
+.mini-hand { display: flex; justify-content: center; padding-left: 7px; }
+.seat p { margin: 7px 0 0; color: #c8d2cc; text-align: center; font-size: 10px; }
+.result-panel { position: relative; z-index: 3; margin-top: 9px; padding: 12px; border-radius: 16px; background: rgba(3,12,9,.94); border: 1px solid rgba(216,173,85,.45); }
+.result-panel h2 { color: var(--gold-light); text-align: center; font-size: 20px; }
+.result-panel .result-lines {
+  margin: 8px 0 10px; padding: 8px 10px; max-height: 48px; overflow: auto;
+  border-radius: 9px; background: rgba(255,255,255,.025);
+  color: #c4cec8; font-size: 10px; line-height: 1.45;
+  text-align: left; scrollbar-width: thin;
+}
 .result-panel .primary-action { width: 100%; }
 
 .modal-card { position: relative; z-index: 2; border: 1px solid rgba(216,173,85,.28); background: linear-gradient(160deg, rgba(19,31,28,.98), rgba(5,12,10,.98)); box-shadow: 0 18px 60px rgba(0,0,0,.35); }
@@ -172,4 +177,8 @@ footer { position: relative; z-index: 1; text-align: center; margin: 24px 0 0; c
   .rack-grid { grid-template-columns: repeat(13, 1fr); min-height: 86px; }
   .rack-grid .card:nth-child(n+8), .rack-grid .card.selected:nth-child(n+8) { transform: none; }
   .rack-grid .card.selected { transform: translateY(-8px); }
+  .card.compact { width: 37px; margin-left: -8px; }
+  .card.compact .corner b { font-size: 11px; }
+  .card.compact .corner .suit { width: 8px; height: 8px; }
+  .seat { padding-block: 13px 12px; }
 }
